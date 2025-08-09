@@ -1,0 +1,80 @@
+{% extends 'detection/base.html' %}
+
+{% block title %}آمار تشخیص زبان{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>آمار کلی سیستم</h2>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-center mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">تعداد کل تشخیص‌ها</h5>
+                    <p class="display-6">{{ total_detections }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">تعداد کاربران</h5>
+                    <p class="display-6">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">زبان‌های پشتیبانی شده</h5>
+                    <p class="display-6">{{ supported_languages }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h4 class="mt-5">آمار زبان‌ها</h4>
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>زبان</th>
+                    <th>کد</th>
+                    <th>تعداد تشخیص</th>
+                    <th>میانگین اطمینان</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lang in language_stats %}
+                <tr>
+                    <td>{{ lang.detected_language__name }}</td>
+                    <td>{{ lang.detected_language__code }}</td>
+                    <td>{{ lang.count }}</td>
+                    <td>{{ lang.avg_confidence|floatformat:1 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <h4 class="mt-5">آمار روزانه (۷ روز گذشته)</h4>
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>تاریخ</th>
+                    <th>تعداد تشخیص</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in daily_stats %}
+                <tr>
+                    <td>{{ day.day }}</td>
+                    <td>{{ day.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-5">
+        <h5>میانگین زمان پردازش هر تشخیص: {{ avg_processing_time|floatformat:3 }} ثانیه</h5>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'detection/base.html' %}
+
+{% block title %}پروفایل کاربری{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>پروفایل کاربری</h2>
+    <div class="card mt-4" style="max-width: 400px; margin: auto;">
+        <div class="card-body text-center">
+            <h4 class="mb-3">{{ user.username }}</h4>
+            <p>خوش آمدید به پروفایل خود!</p>
+            <a href="{% url 'detection:history' %}" class="btn btn-outline-primary mt-2">تاریخچه تشخیص‌ها</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'detection/base.html' %}
+
+{% block title %}ثبت نام{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>ثبت نام</h2>
+    <form method="post" class="mt-4" style="max-width: 400px; margin: auto;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary w-100">ثبت نام</button>
+    </form>
+    {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="mt-3 text-center">
+        <a href="{% url 'accounts:login' %}">ورود به حساب کاربری</a>
+    </div>
+</div>
+{% endblock %}

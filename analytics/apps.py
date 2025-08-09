@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class AnalysticsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'analystics'
+    name = 'analytics'

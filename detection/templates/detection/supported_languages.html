@@ -1,0 +1,35 @@
+{% extends 'detection/base.html' %}
+
+{% block title %}زبان‌های پشتیبانی شده{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>زبان‌های پشتیبانی شده</h2>
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>نام زبان</th>
+                    <th>کد زبان</th>
+                    <th>تعداد تشخیص</th>
+                    <th>میانگین اطمینان</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lang in languages %}
+                <tr>
+                    <td>{{ lang.name }}</td>
+                    <td>{{ lang.code }}</td>
+                    {% for id, stats in language_stats.items %}
+                        {% if id == lang.id %}
+                            <td>{{ stats.count }}</td>
+                            <td>{{ stats.avg_confidence|floatformat:1 }}%</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

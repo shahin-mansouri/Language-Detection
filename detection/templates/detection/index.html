@@ -1,0 +1,298 @@
+{% extends 'detection/base.html' %}
+
+{% block title %}تشخیص زبان - صفحه اصلی{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- فرم تشخیص زبان -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-language me-2"></i>
+                    تشخیص زبان متن
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.text.label_tag }}
+                        {{ form.text }}
+                        {% if form.text.help_text %}
+                            <div class="form-text">{{ form.text.help_text }}</div>
+                        {% endif %}
+                        {% if form.text.errors %}
+                            <div class="text-danger">
+                                {% for error in form.text.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-2"></i>
+                            تشخیص زبان
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- نمایش نتیجه -->
+                {% if result %}
+                <div class="mt-4">
+                    <div class="result-card card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-check-circle me-2"></i>
+                                نتیجه تشخیص
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h3 class="mb-2">
+                                        <span class="language-tag">{{ result.detected_language }}</span>
+                                    </h3>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">میزان اطمینان:</label>
+                                        <div class="confidence-bar">
+                                            <div class="confidence-fill" style="width: {{ result.confidence|floatformat:1 }}%"></div>
+                                        </div>
+                                        <small class="text-light">{{ result.confidence|floatformat:1 }}%</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <div class="mb-2">
+                                                <i class="fas fa-clock fa-2x mb-2"></i>
+                                                <br>
+                                                <strong>{{ result.processing_time|floatformat:3 }}s</strong>
+                                                <br>
+                                                <small>زمان پردازش</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-2">
+                                                <i class="fas fa-font fa-2x mb-2"></i>
+                                                <br>
+                                                <strong>{{ result.word_count }}</strong>
+                                                <br>
+                                                <small>تعداد کلمات</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- احتمالات سایر زبان‌ها -->
+                            {% if result.all_probabilities %}
+                            <div class="mt-3">
+                                <h6>احتمال سایر زبان‌ها:</h6>
+                                <div class="row">
+                                    {% for lang, prob in result.all_probabilities.items %}
+                                        {% if prob > 14 %}
+                                        <div class="col-md-4 mb-2">
+                                            <div class="d-flex justify-content-between">
+                                                <span>{{ lang|title }}</span>
+                                                <span>{{ prob|floatformat:1 }}%</span>
+                                            </div>
+                                            <div class="progress" style="height: 5px;">
+                                                <div class="progress-bar bg-light" style="width: {{ prob|floatformat:1 }}%"></div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- لینک بازخورد -->
+                            {% if user.is_authenticated and result.detection_id %}
+                            <div class="mt-3 text-center">
+                                <a href="{% url 'detection:feedback' result.detection_id %}" class="btn btn-light btn-sm">
+                                    <i class="fas fa-comment me-1"></i>
+                                    ارسال بازخورد
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- آمار کلی -->
+    <div class="col-lg-4">
+        <!-- آمار سریع -->
+        <div class="stats-card card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                <div class="stats-number">{{ total_detections|default:0 }}</div>
+                <div class="text-muted">تشخیص انجام شده</div>
+            </div>
+        </div>
+        
+        <div class="stats-card card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-globe fa-3x text-success mb-3"></i>
+                <div class="stats-number">{{ supported_languages|default:0 }}</div>
+                <div class="text-muted">زبان پشتیبانی شده</div>
+            </div>
+        </div>
+        
+        <!-- راهنمای سریع -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    راهنمای استفاده
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        متن خود را در کادر بالا وارد کنید
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        روی دکمه "تشخیص زبان" کلیک کنید
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        نتیجه همراه با میزان اطمینان نمایش داده می‌شود
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        برای نتایج بهتر، متن طولانی‌تر استفاده کنید
+                    </li>
+                </ul>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-lightbulb me-1"></i>
+                        <strong>نکته:</strong> حداقل 3 کلمه برای تشخیص دقیق‌تر پیشنهاد می‌شود.
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- لینک‌های مفید -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    لینک‌های مفید
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'detection:statistics' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        مشاهده آمار کامل
+                    </a>
+                    <a href="{% url 'detection:supported_languages' %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-globe me-2"></i>
+                        زبان‌های پشتیبانی شده
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'detection:history' %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-history me-2"></i>
+                        تاریخچه تشخیص‌ها
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Usage Example (برای توسعه‌دهندگان) -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-code me-2"></i>
+                    API برای توسعه‌دهندگان
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>می‌توانید از API ما برای تشخیص زبان در برنامه‌های خود استفاده کنید:</p>
+                <div class="bg-dark text-light p-3 rounded">
+                    <code>
+POST http://127.0.0.1:8000/api/detect/
+Content-Type: application/json
+<br><br>
+{
+<br>&nbsp;&nbsp;"text": "متن مورد نظر برای تشخیص زبان"
+<br>}
+                    </code>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        پاسخ شامل زبان تشخیص داده شده، میزان اطمینان و سایر اطلاعات است. مثال خروجی:
+                    </small>
+                    <pre class="bg-light p-2 mt-2 border rounded" style="font-size:0.95em;">
+{
+  "detected_language": "Persian",
+  "confidence": 98.7,
+  "all_probabilities": { "persian": 98.7, "english": 1.2, ... },
+  "processing_time": 0.012,
+  "text_length": 20,
+  "word_count": 4
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-resize textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    }
+    
+    // Character counter
+    const maxLength = 5000;
+    if (textarea) {
+        const counter = document.createElement('div');
+        counter.className = 'text-muted text-end mt-1';
+        counter.style.fontSize = '0.8rem';
+        textarea.parentNode.appendChild(counter);
+        
+        function updateCounter() {
+            const remaining = maxLength - textarea.value.length;
+            counter.textContent = `${textarea.value.length} / ${maxLength} کاراکتر`;
+            
+            if (remaining < 100) {
+                counter.className = 'text-warning text-end mt-1';
+            } else if (remaining < 0) {
+                counter.className = 'text-danger text-end mt-1';
+            } else {
+                counter.className = 'text-muted text-end mt-1';
+            }
+        }
+        
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+});
+</script>
+{% endblock %}

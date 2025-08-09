@@ -1,0 +1,22 @@
+{% extends 'detection/base.html' %}
+
+{% block title %}ورود{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card mt-5">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">ورود به حساب کاربری</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">ورود</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
